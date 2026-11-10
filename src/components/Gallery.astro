@@ -1,0 +1,29 @@
+---
+// Galleria con lightbox e didascalie opzionali. Su telefono i dittici sono mostrati come due foto separate.
+import Pic from './Pic.astro';
+const { images, title = '', mode = 'stack' } = Astro.props;
+---
+<div class={`gal ${mode}`} data-gallery>
+  {images.map((im, i) => im.parts ? (
+    <figure class="has-parts">
+      <button type="button" class="zoom whole" data-src={im.l} data-caption={im.caption || ''} aria-label={`${title} ${i + 1}`}>
+        <Pic img={im} alt={im.caption || `${title} — ${i + 1}`} eager={i === 0 && mode === 'stack'} />
+      </button>
+      <div class="parts">
+        {im.parts.map((p, k) => (
+          <button type="button" class="zoom" data-src={p.l} data-caption={im.caption || ''} aria-label={`${title} ${i + 1}.${k + 1}`}>
+            <img class="ph" src={p.l} width={p.w} height={p.h} alt={im.caption || `${title} — ${i + 1}.${k + 1}`} style={`max-width:min(100%,${p.w}px)`} loading="lazy" decoding="async" />
+          </button>
+        ))}
+      </div>
+      {im.caption && <figcaption>{im.caption}</figcaption>}
+    </figure>
+  ) : (
+    <figure>
+      <button type="button" class="zoom" data-src={im.l} data-caption={im.caption || ''} aria-label={`${title} ${i + 1}`}>
+        <Pic img={im} alt={im.caption || `${title} — ${i + 1}`} eager={i === 0 && mode === 'stack'} sizes={mode === 'cols' ? '(min-width: 900px) 400px, 50vw' : undefined} />
+      </button>
+      {im.caption && <figcaption>{im.caption}</figcaption>}
+    </figure>
+  ))}
+</div>

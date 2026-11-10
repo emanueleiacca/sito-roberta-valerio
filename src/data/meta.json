@@ -1,0 +1,40 @@
+{
+ "_readme": "Livello dei metadati OPZIONALI, separato dai contenuti importati. Ogni campo e' facoltativo: se manca, il sito non mostra nulla. Quando arrivera' il CMS, questi campi diventano campi del form (luogo, anno, temi, didascalie).",
+ "themes": ["youth","women","conflict","exile","borders","environment","education","inclusion","culture","daily"],
+ "projects": {
+  "no-one-is-you": {},
+  "light-in-jouarre": {},
+  "une-autre-facade-du-confinement": {"themes": ["daily"], "places": ["FR"]},
+  "badanti": {"themes": ["women","exile"], "places": ["IT"]},
+  "miner-hill": {"themes": ["women","conflict","borders"], "places": ["XK"]},
+  "17-years-old-in-mitro": {"themes": ["youth","conflict","borders"], "places": ["XK"]},
+  "17-years-old-in-nicosia": {"themes": ["youth","conflict","borders"], "places": ["CY"]},
+  "beloved-lusatia": {"themes": ["environment"], "places": ["DE"]},
+  "once-upon-a-time-the-eden": {"themes": ["environment","culture"], "places": ["IQ"]},
+  "another-iraq-is-possible": {"themes": ["youth","conflict"], "places": ["IQ"]},
+  "refugees-in-lebanon": {"themes": ["exile","conflict"], "places": ["LB"]},
+  "new-lords": {"themes": ["inclusion"], "places": ["LB"]},
+  "youth-in-chad": {"themes": ["youth","education"], "places": ["TD"]},
+  "to-be-peuls": {"themes": ["youth","education"], "places": ["TD"]},
+  "le-bal": {"themes": ["youth","culture"], "places": ["AT"]},
+  "blood-and-honey": {"themes": ["women","conflict"], "places": ["BA"]},
+  "top-model-of-favela": {"themes": ["women","youth","culture"], "places": ["BR"]}
+ },
+ "publications": {
+  "badanti-donna-moderna": {"themes": ["women","exile"], "places": ["IT"]},
+  "diario-badanti": {"themes": ["women","exile"], "places": ["IT"]},
+  "badanti-terre-di-mezzo": {"themes": ["women","exile"], "places": ["IT"]},
+  "ccfd-marais": {"themes": ["environment","culture"], "places": ["IQ"]},
+  "ccfd-marais-2": {"themes": ["environment","culture"], "places": ["IQ"]},
+  "ccfd-another-iraq-is-possible": {"themes": ["youth","conflict"], "places": ["IQ"]},
+  "yo-dona-miner-hill": {"themes": ["women","conflict","borders"], "places": ["XK"]},
+  "kosovo-train": {"themes": ["conflict","borders"], "places": ["XK"]},
+  "kosovotetu": {"themes": ["conflict","borders"], "places": ["XK"]},
+  "io-donna-mitrovica": {"themes": ["conflict","borders"], "places": ["XK"]},
+  "la-vie-tchad": {"themes": ["youth","education"], "places": ["TD"]},
+  "biba-bosnia": {"themes": ["women","conflict"], "places": ["BA"]}
+ },
+ "captions": {
+  "_esempio": {"projects": {"youth-in-chad": {"3": "Didascalia della terza foto (opzionale)"}}, "portraits": {"1": "Nome della persona ritratta (opzionale)"}}
+ }
+}

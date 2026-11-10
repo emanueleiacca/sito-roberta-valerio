@@ -1,0 +1,15 @@
+---
+import Base from '../../layouts/Base.astro';
+import Gallery from '../../components/Gallery.astro';
+import { content } from '../../lib/data.js';
+import { LOCALES, t } from '../../i18n.js';
+import { withCaptions, portraitCaptions } from '../../lib/data.js';
+export function getStaticPaths() { return LOCALES.map((lang) => ({ params: { lang } })); }
+const { lang } = Astro.params;
+const images = withCaptions(content.portraits.images, portraitCaptions());
+---
+<Base lang={lang} title={t(lang, 'portraits')} path="/portraits/" section="portraits">
+  <h1>{t(lang, 'portraits')}</h1>
+  <p class="section-title"><span>{images.length} {t(lang, 'photos')}</span></p>
+  <Gallery images={images} title={t(lang, 'portraits')} mode="cols" />
+</Base>

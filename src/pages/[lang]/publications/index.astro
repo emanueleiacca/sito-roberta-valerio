@@ -1,0 +1,30 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Card from '../../../components/Card.astro';
+import Filters from '../../../components/Filters.astro';
+import { LOCALES, UI, t, lp } from '../../../i18n.js';
+import { publications as getPubs, THEMES, countBy, placeName } from '../../../lib/data.js';
+export function getStaticPaths() { return LOCALES.map((lang) => ({ params: { lang } })); }
+const { lang } = Astro.params;
+const items = getPubs().map((p) => ({ ...p, outlets: [p.outletName] }));
+const oc = countBy(items, 'outlets'), tc = countBy(items, 'themes'), pc = countBy(items, 'places');
+const themeNames = UI[lang].themeNames || UI.fr.themeNames;
+const slugOut = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+const groups = [
+  { key: 'outlet', label: t(lang, 'outlets'), chips: Object.keys(oc).filter((k) => oc[k] > 1).sort((a, b) => oc[b] - oc[a]).map((k) => ({ id: slugOut(k), label: k, count: oc[k] })) },
+  { key: 'theme', label: t(lang, 'themes'), chips: THEMES.filter((k) => tc[k]).map((k) => ({ id: k, label: themeNames[k], count: tc[k] })) },
+  { key: 'place', label: t(lang, 'places'), chips: Object.keys(pc).sort((a, b) => pc[b] - pc[a]).map((k) => ({ id: k, label: placeName(k, lang), count: pc[k] })) },
+];
+const sorts = [{ id: 'original', label: t(lang, 'sortOriginal') }, { id: 'az', label: t(lang, 'sortAZ') }];
+---
+<Base lang={lang} title={t(lang, 'publications')} path="/publications/" section="publications">
+  <h1>{t(lang, 'publications')}</h1>
+  <Filters lang={lang} target="#list" groups={groups} sorts={sorts} total={items.length} />
+  <div class="cards" id="list">
+    {items.map((p, i) => (
+      <div class="item" data-order={i} data-title={`${p.outletName} ${p.title}`} data-outlet={slugOut(p.outletName)} data-theme={p.themes.join(' ')} data-place={p.places.join(' ')}>
+        <Card href={lp(lang, `/publications/${p.slug}/`)} img={p.cover} title={p.title} kicker={p.outletName !== p.title ? p.outletName : ''} meta={`${p.images.length}`} eager={i < 6} />
+      </div>
+    ))}
+  </div>
+</Base>

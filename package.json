@@ -1,0 +1,16 @@
+{
+  "name": "roberta-valerio-site",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "content": "python3 scripts/build_content.py",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource-variable/newsreader": "^5.3.0",
+    "astro": "^7.4.7"
+  }
+}

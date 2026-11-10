@@ -1,0 +1,123 @@
+---
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/newsreader/opsz.css';
+import '@fontsource-variable/newsreader/opsz-italic.css';
+import '../styles/global.css';
+import content from '../data/content.json';
+import { LOCALES, LANG_NAME, isRtl, t, lp } from '../i18n.js';
+const { lang = 'fr', title, description, path = '/', section = '' } = Astro.props;
+const dir = isRtl(lang) ? 'rtl' : 'ltr';
+const site = Astro.site ? Astro.site.href.replace(/\/$/, '') : '';
+const fullTitle = title ? `${title} — Roberta Valerio` : `Roberta Valerio — ${t(lang, 'tagline')}`;
+const desc = description || t(lang, 'desc');
+const draft = import.meta.env.PUBLIC_DRAFT !== 'false';
+const nav = [['work', '/work/'], ['portraits', '/portraits/'], ['commissions', '/commissions/'], ['publications', '/publications/'], ['about', '/about/']];
+---
+<!doctype html>
+<html lang={lang} dir={dir}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={desc} />
+  {draft && <meta name="robots" content="noindex, nofollow" />}
+  <link rel="canonical" href={`${site}/${lang}${path}`} />
+  {LOCALES.map((l) => <link rel="alternate" hreflang={l} href={`${site}/${l}${path}`} />)}
+  <link rel="alternate" hreflang="x-default" href={`${site}/fr${path}`} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={desc} />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#ffffff" />
+  <script is:inline>document.documentElement.classList.add('js')</script>
+</head>
+<body class={`lang-${lang}`}>
+  <a class="skip" href="#main">Skip</a>
+  <header class="site-header" id="top">
+    <div class="wrap bar">
+      <a class="brand" href={lp(lang)}><span>Roberta</span> <span class="v">Valerio</span></a>
+      <nav class="nav" id="nav" aria-label="Menu">
+        {nav.map(([k, p]) => <a href={lp(lang, p)} aria-current={section === k ? 'page' : undefined}>{t(lang, k)}</a>)}
+      </nav>
+      <details class="lang">
+        <summary aria-label={t(lang, 'language')}><span class="globe" aria-hidden="true">◍</span> {lang.toUpperCase()}</summary>
+        <ul>
+          {LOCALES.map((l) => <li><a href={lp(l, path)} hreflang={l} lang={l} dir={isRtl(l) ? 'rtl' : 'ltr'} aria-current={l === lang ? 'true' : undefined}>{LANG_NAME[l]}</a></li>)}
+        </ul>
+      </details>
+      <button class="burger" type="button" aria-controls="nav" aria-expanded="false" aria-label={t(lang, 'menu')}><span></span><span></span></button>
+    </div>
+  </header>
+  <main id="main"><div class="wrap"><slot /></div></main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© {new Date().getFullYear()} Roberta Valerio</span>
+      <a href={content.site.instagram} rel="noopener">Instagram</a>
+      <a href={`mailto:${content.site.email}`}>{content.site.email}</a>
+      {draft && <span class="draft">{t(lang, 'draft')}</span>}
+    </div>
+  </footer>
+
+  <dialog id="lb" aria-label="Photo">
+    <button class="lb-close" type="button" aria-label={t(lang, 'close')}>×</button>
+    <button class="lb-nav lb-prev" type="button" aria-label={t(lang, 'prev')}>‹</button>
+    <img id="lb-img" alt="" />
+    <button class="lb-nav lb-next" type="button" aria-label={t(lang, 'next')}>›</button>
+    <p class="lb-cap" id="lb-cap" hidden></p>
+    <p class="lb-count" id="lb-count"></p>
+  </dialog>
+  <img id="peek" alt="" hidden />
+
+  <script>
+    // --- menu mobile
+    const burger = document.querySelector('.burger');
+    const header = document.querySelector('.site-header');
+    burger?.addEventListener('click', () => {
+      const open = header.classList.toggle('open');
+      burger.setAttribute('aria-expanded', String(open));
+    });
+    // --- menu lingue: si chiude cliccando fuori o con Esc
+    const lang = document.querySelector('details.lang');
+    document.addEventListener('click', (e) => { if (lang?.open && !lang.contains(e.target)) lang.open = false; });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lang?.open) { lang.open = false; lang.querySelector('summary').focus(); } });
+    // --- lightbox
+    const dlg = document.getElementById('lb');
+    const big = document.getElementById('lb-img');
+    const count = document.getElementById('lb-count');
+    const cap = document.getElementById('lb-cap');
+    let items = [], idx = 0;
+    const show = () => {
+      const b = items[idx];
+      big.src = b.dataset.src;
+      big.alt = b.querySelector('img')?.alt || '';
+      count.textContent = `${idx + 1} / ${items.length}`;
+      cap.textContent = b.dataset.caption || ''; cap.hidden = !b.dataset.caption;
+      const n = items[(idx + 1) % items.length]; if (n) new Image().src = n.dataset.src;
+    };
+    const go = (d) => { if (!items.length) return; idx = (idx + d + items.length) % items.length; show(); };
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('.zoom');
+      if (!b) return;
+      const g = b.closest('[data-gallery]');
+      items = [...g.querySelectorAll('.zoom')].filter((x) => x.getClientRects().length);
+      idx = Math.max(0, items.indexOf(b));
+      show(); dlg.showModal();
+    });
+    dlg.querySelector('.lb-close').addEventListener('click', () => dlg.close());
+    dlg.querySelector('.lb-prev').addEventListener('click', () => go(-1));
+    dlg.querySelector('.lb-next').addEventListener('click', () => go(1));
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener('close', () => { big.removeAttribute('src'); });
+    dlg.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1); });
+    let sx = null;
+    dlg.addEventListener('pointerdown', (e) => { sx = e.clientX; });
+    dlg.addEventListener('pointerup', (e) => { if (sx !== null && Math.abs(e.clientX - sx) > 50) go(e.clientX < sx ? 1 : -1); sx = null; });
+    // --- anteprima al passaggio del mouse sul sommario (solo dispositivi con mouse)
+    const peek = document.getElementById('peek');
+    document.querySelectorAll('.row[data-img]').forEach((r) => {
+      r.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'mouse') return; peek.src = r.dataset.img; peek.hidden = false; });
+      r.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse') return; peek.style.transform = `translate(${Math.min(e.clientX + 24, innerWidth - 380)}px, ${Math.max(10, Math.min(e.clientY - 120, innerHeight - 280))}px)`; });
+      r.addEventListener('pointerleave', () => { peek.hidden = true; });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Gallery from '../../../components/Gallery.astro';
+import { LOCALES, UI, t, lp } from '../../../i18n.js';
+import { publications as getPubs, placeName } from '../../../lib/data.js';
+export function getStaticPaths() {
+  return LOCALES.flatMap((lang) => getPubs().map((pub) => ({ params: { lang, slug: pub.slug }, props: { pub } })));
+}
+const { lang } = Astro.params;
+const { pub } = Astro.props;
+const themeNames = UI[lang].themeNames || UI.fr.themeNames;
+---
+<Base lang={lang} title={pub.title} path={`/publications/${pub.slug}/`} section="publications">
+  <p><a class="backlink" href={lp(lang, '/publications/')}>← {t(lang, 'publications')}</a></p>
+  <div class="project-head" style="margin-top:20px">
+    {pub.outletName !== pub.title && <p class="kicker">{pub.outletName}</p>}
+    <h1>{pub.title}</h1>
+    {pub.themes.length > 0 && <p class="tags">{pub.themes.map((k) => <a class="chip" href={lp(lang, `/publications/#theme=${k}`)}>{themeNames[k]}</a>)}{pub.places.map((c) => <span class="chip plain">{placeName(c, lang)}</span>)}</p>}
+  </div>
+  <Gallery images={pub.images} title={pub.title} mode="stack" />
+</Base>

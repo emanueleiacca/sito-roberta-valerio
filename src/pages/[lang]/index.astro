@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import Card from '../../components/Card.astro';
+import { content } from '../../lib/data.js';
+import { LOCALES, GREETINGS, UI, t, lp } from '../../i18n.js';
+import { projects as getProjects, THEMES, countBy, placeName } from '../../lib/data.js';
+export function getStaticPaths() { return LOCALES.map((lang) => ({ params: { lang } })); }
+const { lang } = Astro.params;
+const all = getProjects();
+const featured = all.filter((p) => p.featured);
+const nComm = content.commissions.reduce((s, c) => s + c.images.length, 0);
+const tc = countBy(all, 'themes');
+const themeNames = UI[lang].themeNames || UI.fr.themeNames;
+const step = 2.6;
+const where = (p) => p.places.map((c) => placeName(c, lang)).join(' · ');
+---
+<Base lang={lang} path="/" section="">
+  <section class="hero">
+    <p class="hello" aria-hidden="true">{GREETINGS.map((g, i) => <span style={`animation-delay:${(i * step).toFixed(1)}s`}>{g}</span>)}</p>
+    <h1>{t(lang, 'tagline')}</h1>
+    <p class="epigraph">{t(lang, 'epigraph')}</p>
+    <p class="section-title" style="margin-top:34px"><span>{t(lang, 'fragments')}</span><small><a href={lp(lang, '/work/')}>{t(lang, 'work')} →</a></small></p>
+    <div class="strip" aria-hidden="true">
+      {content.frames.map((f) => <img src={f.l} width={f.w} height={f.h} alt="" loading="lazy" decoding="async" />)}
+    </div>
+  </section>
+
+  <p class="section-title"><span>{t(lang, 'featured')}</span></p>
+  <div class="featured">
+    {featured.map((p, i) => <Card href={lp(lang, `/work/${p.slug}/`)} img={p.cover} title={p.title} kicker={where(p)} n={p.num} meta={p.images.length ? `${p.images.length}` : ''} eager={i < 3} />)}
+  </div>
+
+  <p class="section-title"><span>{t(lang, 'themesIntro')}</span></p>
+  <p class="tags">{THEMES.filter((k) => tc[k]).map((k) => <a class="chip" href={lp(lang, `/work/#theme=${k}`)}>{themeNames[k]}<i>{tc[k]}</i></a>)}</p>
+
+  <p class="section-title"><span>{t(lang, 'sommaire')} — {t(lang, 'work')}</span><small>{all.length}</small></p>
+  <ol class="somm">
+    {all.map((p) => (
+      <li><a class="row" href={lp(lang, `/work/${p.slug}/`)} data-img={p.cover ? p.cover.l : undefined}>
+        <span class="n">N°{p.num}</span><span class="ttl">{p.title}</span>
+        <span class="cnt">{[where(p), p.images.length ? `${p.images.length} ${t(lang, 'photos')}` : t(lang, 'video')].filter(Boolean).join(' · ')}</span>
+      </a></li>
+    ))}
+  </ol>
+
+  <p class="section-title" style="margin-top:56px"><span>+</span></p>
+  <div class="big-links">
+    <a href={lp(lang, '/portraits/')}><b>{t(lang, 'portraits')}</b><span>{content.portraits.images.length} {t(lang, 'photos')}</span></a>
+    <a href={lp(lang, '/commissions/')}><b>{t(lang, 'commissions')}</b><span>{nComm} {t(lang, 'photos')}</span></a>
+    <a href={lp(lang, '/publications/')}><b>{t(lang, 'publications')}</b><span>{content.publications.length}</span></a>
+  </div>
+
+  <a class="insta" href={content.site.instagram} rel="noopener"><b>@robertavalerio.photo</b><span>{t(lang, 'follow')} →</span></a>
+</Base>

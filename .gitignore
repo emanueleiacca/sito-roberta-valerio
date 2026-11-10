@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+_qa/
+_qa-dist.tgz
+studio/node_modules/
+studio/dist/
+studio/.sanity/
+studio/.import-cache.json

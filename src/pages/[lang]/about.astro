@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import Gallery from '../../components/Gallery.astro';
+import { content } from '../../lib/data.js';
+import { LOCALES, BIO, t } from '../../i18n.js';
+export function getStaticPaths() { return LOCALES.map((lang) => ({ params: { lang } })); }
+const { lang } = Astro.params;
+const bio = BIO[lang] || BIO.fr;
+const photos = content.about.images.slice(1); // la prima era una schermata di telefono del 2019
+---
+<Base lang={lang} title={t(lang, 'about')} description={bio[1]} path="/about/" section="about">
+  <h1>{t(lang, 'about')}</h1>
+  <div class="bio" style="margin-top:30px">{bio.map((p) => <p>{p}</p>)}</div>
+  <p class="section-title"><span>{t(lang, 'contact')}</span></p>
+  <p class="contact">
+    <a href={`mailto:${content.site.email}`}>{content.site.email}</a><br />
+    <a href={`tel:${content.site.phone.replace(/\s/g, '')}`} dir="ltr">{content.site.phone}</a><br />
+    <a href={content.site.instagram} rel="noopener">Instagram @robertavalerio.photo</a>
+  </p>
+  <p class="section-title"><span>{photos.length} {t(lang, 'photos')}</span></p>
+  <Gallery images={photos} title={t(lang, 'about')} mode="cols" />
+</Base>

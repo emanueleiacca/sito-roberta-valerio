@@ -1,0 +1,17 @@
+---
+import { LOCALES } from '../i18n.js';
+---
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Roberta Valerio</title>
+  <meta name="robots" content="noindex" />
+  <meta http-equiv="refresh" content="0; url=/fr/" />
+  <script is:inline define:vars={{ locales: LOCALES }}>
+    var l = (navigator.language || 'fr').slice(0, 2);
+    location.replace('/' + (locales.indexOf(l) > -1 ? l : 'fr') + '/');
+  </script>
+</head>
+<body><a href="/fr/">Roberta Valerio</a></body>
+</html>

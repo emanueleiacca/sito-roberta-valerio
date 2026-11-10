@@ -1,0 +1,8 @@
+---
+// Immagine responsive con dimensioni esplicite (niente layout shift). Mai ingrandita oltre la risoluzione nativa.
+const { img, alt = '', eager = false, sizes = '(min-width: 1240px) 1200px, 100vw', cls = 'ph' } = Astro.props;
+const srcset = img.s !== img.l ? `${img.s} ${img.sw}w, ${img.l} ${img.lw}w` : undefined;
+---
+<img class={cls} src={img.l} srcset={srcset} sizes={srcset ? sizes : undefined}
+     width={img.w} height={img.h} alt={alt} style={`max-width:min(100%,${img.w}px)`}
+     loading={eager ? 'eager' : 'lazy'} decoding="async" fetchpriority={eager ? 'high' : undefined} />

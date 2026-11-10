@@ -1,0 +1,18 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Card from '../../../components/Card.astro';
+import { content } from '../../../lib/data.js';
+import { LOCALES, t, lp } from '../../../i18n.js';
+import { NAMES } from './_names.js';
+export function getStaticPaths() { return LOCALES.map((lang) => ({ params: { lang } })); }
+const { lang } = Astro.params;
+---
+<Base lang={lang} title={t(lang, 'commissions')} path="/commissions/" section="commissions">
+  <h1>{t(lang, 'commissions')}</h1>
+  <p class="prose" style="margin-top:22px">{t(lang, 'commIntro')}</p>
+  <div class="cards" style="margin-top:36px">
+    {content.commissions.map((c, i) => (
+      <Card href={lp(lang, `/commissions/${c.slug}/`)} img={c.images[0]} title={NAMES[c.slug]} n={String(i + 1).padStart(2, '0')} meta={`${c.images.length}`} eager />
+    ))}
+  </div>
+</Base>

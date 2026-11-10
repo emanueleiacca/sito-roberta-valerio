@@ -1,0 +1,30 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Card from '../../../components/Card.astro';
+import Filters from '../../../components/Filters.astro';
+import { LOCALES, t, lp } from '../../../i18n.js';
+import { projects as getProjects, THEMES, countBy, placeName } from '../../../lib/data.js';
+import { UI } from '../../../i18n.js';
+export function getStaticPaths() { return LOCALES.map((lang) => ({ params: { lang } })); }
+const { lang } = Astro.params;
+const items = getProjects();
+const tc = countBy(items, 'themes'), pc = countBy(items, 'places');
+const themeNames = UI[lang].themeNames || UI.fr.themeNames;
+const groups = [
+  { key: 'theme', label: t(lang, 'themes'), chips: THEMES.filter((k) => tc[k]).map((k) => ({ id: k, label: themeNames[k], count: tc[k] })) },
+  { key: 'place', label: t(lang, 'places'), chips: Object.keys(pc).sort((a, b) => pc[b] - pc[a]).map((k) => ({ id: k, label: placeName(k, lang), count: pc[k] })) },
+];
+const hasYear = items.some((p) => p.year);
+const sorts = [{ id: 'original', label: t(lang, 'sortOriginal') }, ...(hasYear ? [{ id: 'recent', label: t(lang, 'sortRecent') }] : []), { id: 'az', label: t(lang, 'sortAZ') }];
+---
+<Base lang={lang} title={t(lang, 'work')} path="/work/" section="work">
+  <h1>{t(lang, 'work')}</h1>
+  <Filters lang={lang} target="#list" groups={groups} sorts={sorts} featured total={items.length} />
+  <div class="cards" id="list">
+    {items.map((p, i) => (
+      <div class="item" data-order={i} data-title={p.title} data-year={p.year || ''} data-featured={p.featured ? '1' : '0'} data-theme={p.themes.join(' ')} data-place={p.places.join(' ')}>
+        <Card href={lp(lang, `/work/${p.slug}/`)} img={p.cover} title={p.title} kicker={p.places.map((c) => placeName(c, lang)).join(' · ')} n={p.num} meta={p.images.length ? `${p.images.length}` : ''} eager={i < 6} />
+      </div>
+    ))}
+  </div>
+</Base>

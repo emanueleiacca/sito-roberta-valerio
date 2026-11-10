@@ -1,0 +1,52 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Gallery from '../../../components/Gallery.astro';
+import Card from '../../../components/Card.astro';
+import { LOCALES, UI, isRtl, t, lp } from '../../../i18n.js';
+import { projects as getProjects, placeName } from '../../../lib/data.js';
+export function getStaticPaths() {
+  const all = getProjects();
+  return LOCALES.flatMap((lang) => all.map((project, i) => {
+    const related = all.filter((o) => o.slug !== project.slug)
+      .map((o) => ({ o, s: o.themes.filter((x) => project.themes.includes(x)).length }))
+      .filter((x) => x.s > 0).sort((a, b) => b.s - a.s || a.o.order - b.o.order).slice(0, 3).map((x) => x.o);
+    return { params: { lang, slug: project.slug }, props: { project, prev: all[i - 1] || null, next: all[i + 1] || null, related } };
+  }));
+}
+const { lang } = Astro.params;
+const { project, prev, next, related } = Astro.props;
+const txt = project.text;
+const showNote = txt && txt.lang && txt.lang !== lang;
+const themeNames = UI[lang].themeNames || UI.fr.themeNames;
+const places = project.places.map((c) => placeName(c, lang));
+---
+<Base lang={lang} title={project.title} description={txt?.paras?.[0]?.replace(/<[^>]+>/g, '').slice(0, 160)} path={`/work/${project.slug}/`} section="work">
+  <p><a class="backlink" href={lp(lang, '/work/')}>← {t(lang, 'work')}</a></p>
+  <div class="project-head">
+    <span class="num">N°{project.num}{places.length ? ` · ${places.join(', ')}` : ''}{project.year ? ` · ${project.year}` : ''}</span>
+    <h1>{project.title}</h1>
+    {project.themes.length > 0 && (
+      <p class="tags">{project.themes.map((k) => <a class="chip" href={lp(lang, `/work/#theme=${k}`)}>{themeNames[k]}</a>)}</p>
+    )}
+    {txt && txt.paras.length > 0 && (
+      <div class="prose" dir={txt.lang === 'ar' ? 'rtl' : 'ltr'} lang={txt.lang}>
+        {txt.paras.map((p) => <p set:html={p} />)}
+        {showNote && <p class="note" dir={isRtl(lang) ? 'rtl' : 'ltr'}>{t(lang, 'originalText')} {t(lang, 'langNames')[txt.lang]}</p>}
+      </div>
+    )}
+  </div>
+  {project.video && <video controls preload="metadata" src={project.video}></video>}
+  <Gallery images={project.images} title={project.title} mode="stack" />
+  {related.length > 0 && (
+    <>
+      <p class="section-title"><span>{t(lang, 'related')}</span></p>
+      <div class="cards">
+        {related.map((o) => <Card href={lp(lang, `/work/${o.slug}/`)} img={o.cover} title={o.title} kicker={o.places.map((c) => placeName(c, lang)).join(' · ')} n={o.num} meta={o.images.length ? `${o.images.length}` : ''} />)}
+      </div>
+    </>
+  )}
+  <nav class="pager" aria-label="Pager">
+    {prev ? <a href={lp(lang, `/work/${prev.slug}/`)} rel="prev"><small>← {t(lang, 'prev')}</small>{prev.title}</a> : <span></span>}
+    {next ? <a href={lp(lang, `/work/${next.slug}/`)} rel="next"><small>{t(lang, 'next')} →</small>{next.title}</a> : null}
+  </nav>
+</Base>

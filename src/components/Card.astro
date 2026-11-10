@@ -1,0 +1,13 @@
+---
+// Scheda "provino": copertina intera (mai ritagliata) su fondo chiaro, numero e titolo.
+import Pic from './Pic.astro';
+const { href, img, title, kicker = '', meta = '', n = '', eager = false } = Astro.props;
+---
+<a class="card" href={href}>
+  <span class="thumb">{img ? <Pic img={img} alt="" eager={eager} sizes="(min-width: 900px) 400px, 50vw" cls="ph" /> : <span class="novid">▶</span>}</span>
+  <span class="cap">
+    {n && <span class="n">{n}</span>}
+    <span class="t">{kicker && <small>{kicker}</small>}{title}</span>
+    {meta && <span class="m">{meta}</span>}
+  </span>
+</a>

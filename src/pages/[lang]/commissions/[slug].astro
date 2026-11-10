@@ -1,0 +1,18 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Gallery from '../../../components/Gallery.astro';
+import { content } from '../../../lib/data.js';
+import { LOCALES, t, lp } from '../../../i18n.js';
+import { NAMES } from './_names.js';
+export function getStaticPaths() {
+  return LOCALES.flatMap((lang) => content.commissions.map((c) => ({ params: { lang, slug: c.slug }, props: { c } })));
+}
+const { lang } = Astro.params;
+const { c } = Astro.props;
+---
+<Base lang={lang} title={`${NAMES[c.slug]} — ${t(lang, 'commissions')}`} path={`/commissions/${c.slug}/`} section="commissions">
+  <p><a class="backlink" href={lp(lang, '/commissions/')}>← {t(lang, 'commissions')}</a></p>
+  <div class="project-head"><h1 style="margin-top:20px">{NAMES[c.slug]}</h1></div>
+  <p class="section-title"><span>{c.images.length} {t(lang, 'photos')}</span></p>
+  <Gallery images={c.images} title={NAMES[c.slug]} mode="cols" />
+</Base>
