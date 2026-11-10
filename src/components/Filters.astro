@@ -4,21 +4,31 @@ import { t } from '../i18n.js';
 const { lang, target, groups = [], sorts = [], featured = false, total = 0 } = Astro.props;
 ---
 <div class="filters" data-filters data-target={target} data-total={total} data-all={t(lang, 'all')} data-none={t(lang, 'noResult')}>
-  {groups.map((g) => (
-    <div class="fgroup" data-group={g.key}>
-      <span class="flabel">{g.label}</span>
-      {g.chips.map((c) => <button type="button" class="chip" data-v={c.id} aria-pressed="false">{c.label}<i>{c.count}</i></button>)}
-    </div>
-  ))}
-  <div class="fgroup ftools">
+  <div class="fbar">
+    <button type="button" class="ftoggle" data-toggle aria-expanded="false">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+      <span>{t(lang, 'filter')}</span><b data-badge hidden></b>
+      <svg class="chev" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     {sorts.length > 1 && (
-      <label class="flabel">{t(lang, 'sort')}
+      <label class="fsort"><span class="flabel">{t(lang, 'sort')}</span>
         <select data-sort>{sorts.map((s) => <option value={s.id}>{s.label}</option>)}</select>
       </label>
     )}
-    {featured && <button type="button" class="chip" data-featured aria-pressed="false">★ {t(lang, 'featuredOnly')}</button>}
-    <button type="button" class="chip reset" data-reset hidden>× {t(lang, 'reset')}</button>
+    {featured && <button type="button" class="chip sm" data-featured aria-pressed="false">★ {t(lang, 'featuredOnly')}</button>}
     <span class="fcount" data-count aria-live="polite"></span>
+  </div>
+  <div class="factive" data-active hidden></div>
+  <div class="fpanel" data-panel hidden>
+    {groups.map((g) => (
+      <div class="fgroup" data-group={g.key}>
+        <span class="flabel">{g.label}</span>
+        <div class="fchips">
+          {g.chips.map((c) => <button type="button" class="chip sm" data-v={c.id} aria-pressed="false">{c.label}<i>{c.count}</i></button>)}
+        </div>
+      </div>
+    ))}
+    <button type="button" class="freset" data-reset hidden>× {t(lang, 'reset')}</button>
   </div>
 </div>
 <p class="noresult" data-noresult hidden>{t(lang, 'noResult')}</p>
@@ -30,6 +40,7 @@ const { lang, target, groups = [], sorts = [], featured = false, total = 0 } = A
     let sort = 'original', feat = false;
     const groups = [...root.querySelectorAll('[data-group]')].map((g) => g.dataset.group);
     const noresult = document.querySelector('[data-noresult]');
+    const panel = root.querySelector('[data-panel]'), activeBox = root.querySelector('[data-active]'), badge = root.querySelector('[data-badge]');
     const read = () => {
       const h = new URLSearchParams(location.hash.slice(1));
       groups.forEach((k) => { state[k] = new Set((h.get(k) || '').split(',').filter(Boolean)); });
@@ -66,14 +77,28 @@ const { lang, target, groups = [], sorts = [], featured = false, total = 0 } = A
       const s = root.querySelector('[data-sort]'); if (s) s.value = sort;
       const active = groups.some((k) => state[k].size) || feat;
       root.querySelector('[data-reset]').hidden = !active;
+      const tags = [];
+      groups.forEach((k) => [...state[k]].forEach((v) => {
+        const src = root.querySelector(`[data-group="${k}"] [data-v="${v}"]`);
+        if (src) tags.push(`<button type="button" class="tag" data-group="${k}" data-v="${v}">${src.firstChild.textContent} <span aria-hidden="true">×</span></button>`);
+      }));
+      activeBox.innerHTML = tags.join('');
+      activeBox.hidden = !tags.length;
+      const nAct = tags.length + (feat ? 1 : 0);
+      badge.textContent = nAct; badge.hidden = !nAct;
       root.querySelector('[data-count]').textContent = active ? `${n} / ${items.length}` : '';
       noresult.hidden = n > 0;
     };
     root.addEventListener('click', (e) => {
-      const c = e.target.closest('.chip'); if (!c) return;
+      if (e.target.closest('[data-toggle]')) {
+        const open = panel.hidden; panel.hidden = !open;
+        root.querySelector('[data-toggle]').setAttribute('aria-expanded', String(open)); return;
+      }
+      const c = e.target.closest('.chip, .freset, .tag'); if (!c) return;
       if (c.matches('[data-reset]')) { groups.forEach((k) => state[k].clear()); feat = false; }
       else if (c.matches('[data-featured]')) feat = !feat;
-      else { const set = state[c.parentElement.dataset.group]; set.has(c.dataset.v) ? set.delete(c.dataset.v) : set.add(c.dataset.v); }
+      else if (c.matches('.tag')) { c.dataset.group === 'featured' ? (feat = false) : state[c.dataset.group].delete(c.dataset.v); }
+      else { const set = state[c.closest('[data-group]').dataset.group]; set.has(c.dataset.v) ? set.delete(c.dataset.v) : set.add(c.dataset.v); }
       write(); apply();
     });
     root.querySelector('[data-sort]')?.addEventListener('change', (e) => { sort = e.target.value; write(); apply(); });
